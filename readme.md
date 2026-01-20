@@ -21,13 +21,10 @@ Terminali projenin kök dizininde açın ve şu komutu çalıştırın:
 npm install
 
 ### Eğer ana dizinde tsconfig.json dosyanız yoksa oluşturmak için:
-```bash
 npx tsc --init
 
 ### Çalıştırmadan önce şu paketlerin yüklü olduğundan emin ol: 
-```bash
 npm install sass gulp-sass gulp-clean-css gulp-autoprefixer gulp-purgecss gulp-pug gulp-typescript typescript gulp-terser gulp-imagemin gulp-webp gulp-rename gulp-sourcemaps --save-dev
 
 ### Geliştirme sürecini başlatmak, tüm dosyaları derlemek ve izlemeye (watch) almak için terminale yazın:
-```bash
 npx gulp
