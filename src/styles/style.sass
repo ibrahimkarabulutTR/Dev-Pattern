@@ -1,0 +1,38 @@
+$sm: 576
+$md: 768
+$lg: 992
+$xl: 1200
+$xxl: 1400
+
+@mixin max($breakpoint)
+	@media (max-width: $breakpoint + px)
+		@content
+
+@mixin min($breakpoint)
+	@media (min-width: ($breakpoint - 0.001) + px)
+		@content
+
+@mixin minmax($minBreakpoint, $maxBreakpoint)
+	@media (min-width: ($minBreakpoint - 0.001) + px) AND (max-width: $maxBreakpoint)
+		@content
+
+@font-face
+	font-family: 'Inter'
+	font-style: normal
+	font-display: swap
+	src: url('../fonts/Inter-Normal.woff2')
+
+@font-face
+	font-family: 'Poppins'
+	font-style: normal
+	font-display: swap
+	src: url('../fonts/Poppins-Normal.woff2')
+
+*
+	padding: 0
+	margin: 0
+	border: 0
+	outline: 0
+	text-decoration: none
+	box-sizing: border-box
+	list-style: none
