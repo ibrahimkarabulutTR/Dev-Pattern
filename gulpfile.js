@@ -1,62 +1,115 @@
 import gulp from 'gulp';
-const {src, dest, series, parallel, watch} = gulp;
-import gulpSass from 'gulp-sass' ;
-import * as dartSass from 'sass'; // Sass dosyalarını CSS'e derler.
+import gulpSass from 'gulp-sass';
+import * as dartSass from 'sass';
+import cleanCss from 'gulp-clean-css';
+import autoprefixer from 'gulp-autoprefixer';
+import pug from 'gulp-pug';
+import typescript from 'gulp-typescript';
+import terser from 'gulp-terser';
+import gulpIf from 'gulp-if';
+import sharpOptimizeImages from 'gulp-sharp-optimize-images';
+import plumber from 'gulp-plumber';
+import sourcemaps from 'gulp-sourcemaps';
+import notify from 'gulp-notify';
+
+const {src, dest, series, parallel, watch: gulpWatch} = gulp;
 const sass = gulpSass(dartSass);
-import cleancss from 'gulp-clean-css'; // CSS dosyalarını sıkıştırır.
-import autoprefixer from 'gulp-autoprefixer'; // CSS uyumluluk ayarları ekleyici.
-// import purgecss from 'gulp-purgecss'; // gereksiz CSS temizler.
-import pug from 'gulp-pug'; // PUG dosyasını HTML 2e dönüştürür.
-import ts from 'gulp-typescript'; // TS dosyasını JS ye dönüştürür.
-import terser from 'gulp-terser'; // JS dosyasını sıkıştırır.
-import imagemin from 'gulp-imagemin'; // resim sıkıştırır.
-import imagewebp from 'gulp-webp'; // görselleri WEBP'ye dönüştürür.
-import rename from 'gulp-rename'; // dosya adını değiştirir.
-import sourcemaps from 'gulp-sourcemaps';  // hatanın asıl yerini gösterir.
-
-const tsProject = ts.createProject('tsconfig.json');
-
-function htmlTask(){
-	return src('src/pages/*.pug')
-		.pipe(pug({pretty: true}))
-		.pipe(dest('dist/'));
+const tsproject = typescript.createProject('tsconfig.json');
+const path = {
+	html: {
+		src: 'src/pages/*',
+		dest: 'dist/'
+	},
+	css: {
+		src: 'src/styles/*',
+		dest: 'dist/assets/css/'
+	},
+	js: {
+		src: 'src/scripts/*',
+		dest: 'dist/assets/js'
+	},
+	scaleImg: {
+		src: 'src/scale-images/*',
+		dest: 'src/images'
+	},
+	compareImg: {
+		src: 'src/images/*.jpg',
+		dest: 'dist/assets/img'
+	}
 }
 
-function cssTask() {
-	return src('src/styles/**/*.sass')
+const onError = function(err) {
+	notify.onError({
+		title: 'Gulp Hatası: ('+err.plugin+')',
+		message: 'Hata: <%= error.message %>',
+		sound: 'Beep',
+		timeout:  3,
+		wait: false
+	})(err)
+	this.emit('end')
+}
+
+const html = () => {
+	return src(path.html.src)
+		.pipe(plumber())
+		// .pipe(plumber({ errorHandler: onError })) // bildirim almak için aç
+		.pipe(pug({
+				pretty: true
+			})
+		)
+		.pipe(dest(path.html.dest))
+}
+
+const css = () => {
+	return src(path.css.src)
 		.pipe(sourcemaps.init())
+		.pipe(plumber())
+		// .pipe(plumber({ errorHandler: onError })) // bildirim almak için aç
 		.pipe(sass().on('error', sass.logError))
-		.pipe(cleancss())
 		.pipe(autoprefixer())
-		.pipe(rename({suffix: '.min'}))
-		.pipe(sourcemaps.write('.'))
-		.pipe(dest('dist/assets/css'));
+		.pipe(cleanCss())
+		.pipe(sourcemaps.write(''))
+		.pipe(dest(path.css.dest))
 }
 
-
-function scriptsTask(){
-	return src('src/scripts/*.ts')
+const js = () => {
+	return src(path.js.src)
 		.pipe(sourcemaps.init())
-		.pipe(tsProject())
+		.pipe(plumber())
+		// .pipe(plumber({ errorHandler: onError })) // bildirim almak için aç
+		.pipe(tsproject())
 		.pipe(terser())
-		.pipe(rename({suffix: '.min'}))
-		.pipe(sourcemaps.write('.'))
-		.pipe(dest('dist/assets/js'));
+		.pipe(sourcemaps.write(''))
+		.pipe(dest(path.js.dest))
 }
 
-function imgTask(){
-	return src('src/images/*')
-		.pipe(imagewebp())
-		.pipe(imagemin())
-		.pipe(dest('dist/assets/img'));
+const compareImg = () => {
+  return src('src/images/*.{jpg,jpeg,png}')
+    .pipe(gulpIf(file => file.extname === '.jpg' || file.extname === '.jpeg', 
+      sharpOptimizeImages({
+        jpg: { quality: 70, mozjpeg: true }
+      })
+    ))
+    .pipe(gulpIf(file => file.extname === '.png', 
+      sharpOptimizeImages({
+        png: { quality: 50, palette: true }
+      })
+    ))
+    .pipe(dest('dist/assets/img/'))
+    .pipe(sharpOptimizeImages({
+      webp: { quality: 70 }
+    }))
+    .pipe(dest('dist/assets/img/'));
+};
+
+const watchFiles = () => {
+	gulpWatch(path.html.src, html);
+	gulpWatch(path.css.src, css);
+	gulpWatch(path.js.src, js);
+	gulpWatch(path.compareImg.src, compareImg);
 }
 
-function watchTask(){
-	watch('src/pages/**/*.pug', htmlTask);
-	watch('src/styles/**/*.sass', cssTask);
-	watch('src/scripts/**/*.ts', scriptsTask);
-	watch('src/images/**/*', imgTask);
-}
-
-export { htmlTask, cssTask, scriptsTask, imgTask };
-export default series(parallel(htmlTask, cssTask, scriptsTask, imgTask), watchTask);
+export default series(
+	parallel(html, css, js, compareImg),
+	watchFiles
+)
