@@ -28,12 +28,8 @@ const path = {
 		src: 'src/scripts/*',
 		dest: 'dist/assets/js'
 	},
-	scaleImg: {
-		src: 'src/scale-images/*',
-		dest: 'src/images'
-	},
 	compareImg: {
-		src: 'src/images/*.jpg',
+		src: 'src/images/',
 		dest: 'dist/assets/img'
 	}
 }
@@ -49,7 +45,7 @@ const onError = function(err) {
 	this.emit('end')
 }
 
-const html = () => {
+export const html = () => {
 	return src(path.html.src)
 		.pipe(plumber())
 		// .pipe(plumber({ errorHandler: onError })) // bildirim almak için aç
@@ -60,7 +56,7 @@ const html = () => {
 		.pipe(dest(path.html.dest))
 }
 
-const css = () => {
+export const css = () => {
 	return src(path.css.src)
 		.pipe(sourcemaps.init())
 		.pipe(plumber())
@@ -72,7 +68,7 @@ const css = () => {
 		.pipe(dest(path.css.dest))
 }
 
-const js = () => {
+export const js = () => {
 	return src(path.js.src)
 		.pipe(sourcemaps.init())
 		.pipe(plumber())
@@ -83,8 +79,8 @@ const js = () => {
 		.pipe(dest(path.js.dest))
 }
 
-const compareImg = () => {
-  return src('src/images/*.{jpg,jpeg,png}')
+export const compareImg = () => {
+  return src(path.compareImg.src+'*.{jpg,jpeg,png}')
     .pipe(gulpIf(file => file.extname === '.jpg' || file.extname === '.jpeg', 
       sharpOptimizeImages({
         jpg: { quality: 70, mozjpeg: true }
@@ -95,14 +91,14 @@ const compareImg = () => {
         png: { quality: 50, palette: true }
       })
     ))
-    .pipe(dest('dist/assets/img/'))
+    .pipe(dest(path.compareImg.dest))
     .pipe(sharpOptimizeImages({
       webp: { quality: 70 }
     }))
-    .pipe(dest('dist/assets/img/'));
+    .pipe(dest(path.compareImg.dest));
 };
 
-const watchFiles = () => {
+export const watchFiles = () => {
 	gulpWatch(path.html.src, html);
 	gulpWatch(path.css.src, css);
 	gulpWatch(path.js.src, js);
