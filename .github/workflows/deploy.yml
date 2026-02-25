@@ -5,30 +5,30 @@ on:
     branches: [ master ]
 
 jobs:
-  runs-on: ubuntu-latest
+  process:
+    runs-on: ubuntu-latest 
+    steps:
+    - name: Kodu kopyala
+      uses: actions/checkout@v4
 
-  steps:
-  - name: Kodu kopyala
-    uses: actions/checkout@v4
+    - name: Node kurulum
+      uses: actions/setup-node@v4
+      with: 
+        node-version: '22.19.0'
 
-  - name: Node kurulum
-    uses: actions/setup-node@v4
-    with: 
-      node-version: '22.19.0'
+    - name: Paket kurulum
+      run: npm install
 
-  - name: Paket kurulum
-    run: npm install
+    - name: Proje derleme
+      run: npx gulp
 
-  - name: Proje derleme
-    run: npx gulp
+    - name: Php test
+      run: npx gulp phpTest
 
-  - name: Php test
-    run: npx gulp phpTest
-
-  - name: Sunucuya gönder
-    uses: SaMKirkland/FTP-Deploy-Action@v4.3.5
-    with:
-      server: ${{ secrets.FTP_SERVER }}
-      username: ${{ secrets.FTP_USER }}
-      password: ${{ secrets.FTP_PASS }}
-      local-dir: ./dist/
+    - name: Sunucuya gönder
+      uses: SaMKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASS }}
+        local-dir: ./dist/
