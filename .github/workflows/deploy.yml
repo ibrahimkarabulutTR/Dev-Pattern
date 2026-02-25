@@ -20,7 +20,7 @@ jobs:
       run: npm install
 
     - name: Proje derleme
-      run: npx gulp
+      run: npx gulp build
 
     - name: Php test
       run: npx gulp phpTest

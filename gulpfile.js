@@ -130,6 +130,10 @@ export const watchFiles = () => {
 	gulpWatch(path.compareImg.src, compareImg);
 }
 
+export const build = series(
+	parallel(html, css, js, compareImg)
+)
+
 export default series(
 	parallel(html, css, js, compareImg),
 	watchFiles
