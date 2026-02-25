@@ -25,7 +25,7 @@ npm install
 npx tsc --init
 
 ### Çalıştırmadan önce şu paketlerin yüklü olduğundan emin ol: 
-npm install gulp gulp-cli sass gulp-sass gulp-clean-css gulp-autoprefixer gulp-pug gulp-typescript gulp-terser gulp-if gulp-sharp-optimize-images gulp-plumber gulp-sourcemaps gulp-notify --save-dev
+npm install gulp gulp-cli sass gulp-sass gulp-clean-css gulp-autoprefixer gulp-pug gulp-typescript gulp-terser gulp-if gulp-sharp-optimize-images gulp-plumber gulp-sourcemaps gulp-notify gulp-phplint gulp-phug --save-dev
 
 ### Geliştirme sürecini başlatmak, tüm dosyaları derlemek ve izlemeye (watch) almak için terminale yazın:
 npx gulp

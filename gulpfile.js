@@ -4,6 +4,7 @@ import * as dartSass from 'sass';
 import cleanCss from 'gulp-clean-css';
 import autoprefixer from 'gulp-autoprefixer';
 import pug from 'gulp-pug';
+import phug from 'gulp-phug';
 import typescript from 'gulp-typescript';
 import terser from 'gulp-terser';
 import gulpIf from 'gulp-if';
@@ -11,6 +12,7 @@ import sharpOptimizeImages from 'gulp-sharp-optimize-images';
 import plumber from 'gulp-plumber';
 import sourcemaps from 'gulp-sourcemaps';
 import notify from 'gulp-notify';
+import phplint from 'gulp-phplint';
 
 const {src, dest, series, parallel, watch: gulpWatch} = gulp;
 const sass = gulpSass(dartSass);
@@ -27,6 +29,10 @@ const path = {
 	js: {
 		src: 'src/scripts/*',
 		dest: 'dist/assets/js'
+	},
+	php: {
+		src: 'src/pages/**/*.pug',
+		dest: 'dist/'
 	},
 	compareImg: {
 		src: 'src/images/',
@@ -79,6 +85,15 @@ export const js = () => {
 		.pipe(dest(path.js.dest))
 }
 
+export const php = () => {
+	return src(path.php.src)
+		.pipe(phug({
+			php: true,
+			doubleQuote: true
+		}))
+		.pipe(dest(path.php.src))
+}
+
 export const compareImg = () => {
   return src(path.compareImg.src+'*.{jpg,jpeg,png}')
     .pipe(gulpIf(file => file.extname === '.jpg' || file.extname === '.jpeg', 
@@ -98,6 +113,16 @@ export const compareImg = () => {
     .pipe(dest(path.compareImg.dest));
 };
 
+export const phpTest = () => {
+	return gulp.src('dist/**/*.php')
+		.pipe(sourcemaps.init())
+		.pipe(plumber())
+		.pipe(phplint())
+		.pipe(phplint.reporter('fail'))
+		// .pipe(sourcemaps.write(''))
+}
+
+// backend için html yerin php yaz
 export const watchFiles = () => {
 	gulpWatch(path.html.src, html);
 	gulpWatch(path.css.src, css);
